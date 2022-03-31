@@ -336,3 +336,177 @@ def interseccion(intervals):
         elif (start <= end):
             return [start, end]
         
+
+### intervalosarmonicos ###
+
+def intervalosarmonicos(i, v, Dv, orden_maximo):
+    """
+    Calcula los intervalos de incertidumbre de cada múltiplo r = 2,..., orden_maximo,
+    para una componente espectral dada i, de i = [0 : F-1]
+    Parametros
+    ----------
+    i: int
+        Índice de la componente en la lista de componentes espectrales.
+    v: list
+        Frecuencias de las componentes espectrales.
+    Dv: list
+        Incertidumbre de las frecuencias de las componentes espectrales.
+    orden_maximo: int
+        Maximo orden con el cual se calcula una frecuencia de la serie.
+    
+    Valores de salida
+    ----------
+    intervalos: lista de listas
+        Intervalos de incertidumbre (expresados en forma de lista, 
+        por ejemplo: [0.51 , 0.85]) para cada frecuencia múltiplo.
+    """
+    intervalos = []
+    
+    for r in range(2, orden_maximo):
+        r_liminf = r * (v[i] - (Dv[i]/2))
+        r_limsup = r * (v[i] + (Dv[i]/2))
+        intervalos.append( [r_liminf, r_limsup] )
+        
+    return intervalos
+
+
+### encontrar_armonico ###
+
+def encontrar_armonico(r, i, v, Dv, intervalo_componente):
+    """
+    Funcion que encuentra el armónico de orden r para la componente espectral i.
+    
+    Parametros de entrada
+    ----------
+    r: int
+        Orden del armónico. Valor por el que se multiplica la frecuencia fundamental de la componente i,
+        encontrando así la frecuencia del armónico que se quiere buscar en el espectro.
+    i: int
+        Indice de la lista de componentes espectrales.
+    v: list
+        Frecuencias de las componentes espectrales.
+    Dv: list
+        Incertidumbre de las frecuencias de las componentes espectrales.
+    intervalo_componente: list of lists
+        Intervalos de incertidumbre para cada componente espectral i.
+    
+    Valores de salida
+    ----------
+    armonico: float
+        Frecuencia del armónico encontrado. Si no encuentra armónico, el valor de ese armónico es 0.
+    indice: int
+        Indice de la lista de componentes espectrales del armónico encontrado.
+    
+    Raises
+    ------
+    ValueError
+        Si hay más de dos intervalos de incertidumbre de las componentes espectrales que cumplen que
+        su intersección con el intervalo de incertidumbre del armónico de oden r de la componente i, es no vacía.
+    """
+    
+    c = 0
+    alista = []
+    blista = []
+    
+    # actualizamos los intervalos de incertidumbre todos los armónicos de i para el nuevo v[i] y Dv[i]
+    rxvi = intervalosarmonicos(i)
+    
+    for j, componente in enumerate(intervalo_componente):  # para cada componente
+        
+        # calculamos la interseccion del intervalo de incertidumbre de la componente j con
+        # el intervalo de incertidumbre del armónico de orden r de la componente i (rxvi[r-2]). 
+        z = interseccion([componente, rxvi[r-2]])
+        
+        # Si el intervalo es no vacío:
+        if z:
+            # contabilizamos 1 intersección no vacía
+            c += 1
+            # añadimos a las listas los extremos del intervalo interseccion
+            alista.append(z[0]) 
+            blista.append(z[1])
+            # damos el valor correpondiente al indice encontrado con interseccion no vacia
+            indice = j
+                    
+            a, b = alista[0], blista[0]
+
+    # Si se encuentran 2 intervalos que cumplen que la interseccion con rxvi[r-2] es no vacía
+    if c == 2:
+        # calcular cual de las dos frecuencias encontradas está más cerca de r x frecuencia componente i
+        if abs(v[indice-1] - r*v[i]) < abs(v[indice] - r*v[i]):
+            # actualizamos a, b e indice en consecuencia
+            a = alista[0]
+            b = blista[0]
+            indice -= 1
+        else:
+            a, b = alista[1], blista[1]
+    # Si hay más de 2 intervalos que lo cumplen: mostramos un error.
+    elif c > 2:
+        raise ValueError("Hay más de 2 intervalos que tienen intersección no vacía. Este algoritmo está diseñado para máximo 2 intervalos.")
+        # Posibles mejoras: desarrollar esta parte de la función para más de 2 intervalos con intersección no vacía.
+    
+    if not c: # Si no se ha encontrado ningún armónico para ese orden r
+        armonico = 0
+        indice = None
+
+    else: # Si sí se ha encontrado armónico
+        armonico = v[indice]
+        a = float(a)
+        b = float(b)
+        # actualizamos los v[i] y Dv[i]
+        v[i] = (a+b) / (2*r)
+        Dv[i] = (b-a) / r
+
+    return armonico, indice
+
+
+### encontrar_seriearmonica ###
+
+def encontrar_seriearmonica(i, v, orden_maximo, criterio_parada):
+    """
+    Calcula la serie armónica de una componente espectral dada i.
+    Parametros
+    ----------
+    i: int
+        Índice de la componente en la lista de componentes espectrales.
+    v: list
+        Frecuencias de las componentes espectrales.
+    orden_maximo: int
+        Maximo orden con el cual se calcula una frecuencia de la serie.
+    criterio_parada: int
+        Número máximo de veces que no se encuentra el armónico deseado, tras el cual
+        el algoritmo deja de iterar (deja de buscar armónicos en la serie).
+    
+    Valores de salida
+    ----------
+    serie_armonica: lista
+        Lista de los armónicos encontrados para la componente i. Las posiciones de la lista
+        que contienen un 0 significan que no se ha encontrado armónico para ese orden r
+    serie_armonica_indices: lista
+        Lista de índices de las frecuencias de la serie armónica encontrada.
+    numero_armonicos: int
+        Número de armónicos de la serie sin contar la frecuencia fundamental.
+    """
+    serie_armonica = [v[i]]
+    serie_armonica_indices = [i]
+    numero_armonicos = 1
+    k = 0
+    for r in range(2, orden_maximo):
+        
+        # Busca el armónico número r
+        armonico, indice = encontrar_armonico(r,i)
+        if (armonico == 0): # Si no encuentra armónico
+            k += 1
+        else: # Si encuentra un armónico
+            numero_armonicos += 1
+            k = 0
+            serie_armonica_indices.append(indice)
+        
+        # Si después de k veces no ha encontrado armónico, la serie para
+        if (k == criterio_parada):
+            serie_armonica = serie_armonica[0:r-k]
+            break
+        
+        serie_armonica.append(armonico)
+        serie_armonica[0] = v[i] # actualizamos el primer valor de la serie ya que ha sido modificado
+    
+    return serie_armonica, serie_armonica_indices, numero_armonicos
