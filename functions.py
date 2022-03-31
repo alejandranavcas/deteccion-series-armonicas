@@ -372,7 +372,7 @@ def intervalosarmonicos(i, v, Dv, orden_maximo):
 
 ### encontrar_armonico ###
 
-def encontrar_armonico(r, i, v, Dv, intervalo_componente):
+def encontrar_armonico(r, i, v, Dv, intervalo_componente, orden_maximo):
     """
     Funcion que encuentra el armónico de orden r para la componente espectral i.
     
@@ -389,6 +389,8 @@ def encontrar_armonico(r, i, v, Dv, intervalo_componente):
         Incertidumbre de las frecuencias de las componentes espectrales.
     intervalo_componente: list of lists
         Intervalos de incertidumbre para cada componente espectral i.
+    orden_maximo: int
+        Maximo orden con el cual se calcula una frecuencia de la serie.
     
     Valores de salida
     ----------
@@ -409,7 +411,7 @@ def encontrar_armonico(r, i, v, Dv, intervalo_componente):
     blista = []
     
     # actualizamos los intervalos de incertidumbre todos los armónicos de i para el nuevo v[i] y Dv[i]
-    rxvi = intervalosarmonicos(i)
+    rxvi = intervalosarmonicos(i, v, Dv, orden_maximo)
     
     for j, componente in enumerate(intervalo_componente):  # para cada componente
         
@@ -461,7 +463,7 @@ def encontrar_armonico(r, i, v, Dv, intervalo_componente):
 
 ### encontrar_seriearmonica ###
 
-def encontrar_seriearmonica(i, v, orden_maximo, criterio_parada):
+def encontrar_seriearmonica(i, v, Dv, intervalo_componente, orden_maximo, criterio_parada):
     """
     Calcula la serie armónica de una componente espectral dada i.
     Parametros
@@ -470,6 +472,10 @@ def encontrar_seriearmonica(i, v, orden_maximo, criterio_parada):
         Índice de la componente en la lista de componentes espectrales.
     v: list
         Frecuencias de las componentes espectrales.
+    Dv: list
+        Incertidumbre de las frecuencias de las componentes espectrales.
+    intervalo_componente: list of lists
+        Intervalos de incertidumbre para cada componente espectral i.
     orden_maximo: int
         Maximo orden con el cual se calcula una frecuencia de la serie.
     criterio_parada: int
@@ -493,7 +499,7 @@ def encontrar_seriearmonica(i, v, orden_maximo, criterio_parada):
     for r in range(2, orden_maximo):
         
         # Busca el armónico número r
-        armonico, indice = encontrar_armonico(r,i)
+        armonico, indice = encontrar_armonico(r, i, v, Dv, intervalo_componente, orden_maximo)
         if (armonico == 0): # Si no encuentra armónico
             k += 1
         else: # Si encuentra un armónico
