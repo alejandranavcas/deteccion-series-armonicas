@@ -15,11 +15,11 @@ Moreover, there are two other notebooks without the implementation of the functi
 * Detección de series armónicas - Espectro importado - Short
 * Detección de series armónicas - Ondas generadas - Short
 
-Lastly there is a file (functions-deteccion-series-armonicas.py) that shows all of the main functions used in the notebooks.
+Lastly there is a file (functions.py) that shows all of the main functions used in the notebooks.
 
-In this repository I have also uploaded nine frequency spectrums as .csv files to import and try with the code.
+In this repository I have also uploaded a folder (ejemploscsv) with nine frequency spectrums as .csv files to import and try with the code.
 
-##########################################################################
+######################################################################################
 
 SPANISH:
 
@@ -32,8 +32,8 @@ Hay dos notebooks principales que contienen todas las funciones:
 El notebook "Espectro importado" nos da como salida las series armónicas detectadas dado un espectro de frecuencias importado (de un archivo .csv).
 El de "Ondas generadas" nos devuelve las series armónicas encontradas en un espectro de frecuencias de una señal generada. El espectro de la señal es obtenido gracias a una función en el propio código.
 
-Además, hay otros dos notebooks que no contienen la implementación de las funciones, sino que las funciones están en otro archivo (functions-deteccion-series-armonicas.py). Estos son:
+Además, hay otros dos notebooks que no contienen la implementación de las funciones, sino que las funciones están en otro archivo (functions.py). Estos son:
 * Detección de series armónicas - Espectro importado - Short
 * Detección de series armónicas - Ondas generadas - Short
 
-En el propio repositorio están los nueve espectros de frecuencias de ejemplo como archivos .csv para importar.
+En el propio repositorio hay una carpeta (ejemploscsv) con los nueve espectros de frecuencias de ejemplo como archivos .csv para importar.
